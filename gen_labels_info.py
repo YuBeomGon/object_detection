@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import glob
 from utils.xml_parser import XMLParser
+from utils import rej_size, rej_table, replace_table
 
 
 def generate_labels_info(out_path="./data/labels_info.npy"):
@@ -15,15 +17,24 @@ def generate_labels_info(out_path="./data/labels_info.npy"):
 
     labels_info = {}
     for idx, img_path in enumerate(img_path_list):
-        try:
-            xml_path = img_path[:-3] + "xml"
-            parser = XMLParser(xml_path)    
-            ID = img_path.split("original/")[-1]
-            labels = parser.objects
-            labels_info[ID] = labels
-        
-        except:
-            pass
+        xml_path = img_path[:-3] + "xml"
+        if os.path.isfile(xml_path):
+            parser = XMLParser(xml_path)
+            if (parser.height, parser.width) not in rej_size:
+                ID = img_path.split("original/")[-1]            
+                labels = parser.objects
+                new_labels = []
+                for label in labels:
+                    cname, xmin, ymin, xmax, ymax = label
+                    if cname in rej_table:
+                        continue
+
+                    if cname in replace_table:
+                        cname = replace_table[cname]
+                    new_labels.append([cname, xmin, ymin, xmax, ymax])
+                
+                # Add new refined labels
+                labels_info[ID] = new_labels
 
         if idx % 1000 == 0:
             print(idx, img_path)
