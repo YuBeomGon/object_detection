@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import glob
 from utils.xml_parser import XMLParser
@@ -16,13 +15,15 @@ def generate_labels_info(out_path="./data/labels_info.npy"):
 
     labels_info = {}
     for idx, img_path in enumerate(img_path_list):
-        xml_path = img_path[:-3] + "xml"
-        if os.path.isfile(xml_path):
-            parser = XMLParser(xml_path)
-            
+        try:
+            xml_path = img_path[:-3] + "xml"
+            parser = XMLParser(xml_path)    
             ID = img_path.split("original/")[-1]
             labels = parser.objects
             labels_info[ID] = labels
+        
+        except:
+            pass
 
         if idx % 1000 == 0:
             print(idx, img_path)
@@ -33,3 +34,4 @@ def generate_labels_info(out_path="./data/labels_info.npy"):
 if __name__ == '__main__':
     out_path = './data/labels_info.npy'
     generate_labels_info(out_path)
+
