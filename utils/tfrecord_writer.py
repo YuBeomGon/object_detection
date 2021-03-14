@@ -89,10 +89,10 @@ class TFRecordWriter(object):
         features = {
             'image/height': self._int64_feature(height),
             'image/width': self._int64_feature(width),
-            'image/filename': self._bytes_feature(data_ID.endoce('utf-8')),
-            'image/source_id': self._bytes_feature(data_ID.endoce('utf-8')),
+            'image/filename': self._bytes_feature(data_ID.encode('utf-8')),
+            'image/source_id': self._bytes_feature(data_ID.encode('utf-8')),
             'image/encoded': self._bytes_feature(img.tostring()),
-            'image/format': self._bytes_feature(img_format.endoce('utf-8')),
+            'image/format': self._bytes_feature(img_format.encode('utf-8')),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
             'image/object/bbox/ymin': self._float_list_feature(ymins),
