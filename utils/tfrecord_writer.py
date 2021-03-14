@@ -125,7 +125,12 @@ class TFRecordWriter(object):
         return img, new_labels
         
     def _class_text_to_int(self, class_text):
-        return np.where(self.classes == class_text)[0][0]
+        for idx, cname in enumerate(self.classes):
+            if class_text == cname:
+                return idx
+            else:
+                print("Need to fix label names before running it.")
+                raise ValueError
 
     def _int64_feature(self, value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
