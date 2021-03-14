@@ -50,7 +50,7 @@ class TFRecordWriter(object):
         tfrecord_writer = tf.io.TFRecordWriter(out_path)
         # Collect train data
         for idx, ID in enumerate(train_IDs):
-            features = self._get_data(data_ID)
+            features = self._get_data(ID)
             tfrecord_writer.write(features.SerializeToString())
         tfrecord_writer.close()
         print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))
@@ -61,7 +61,7 @@ class TFRecordWriter(object):
         tfrecord_writer = tf.io.TFRecordWriter(out_path)
         # Collect test data
         for idx, ID in enumerate(test_IDs):
-            features = self._get_data(data_ID)
+            features = self._get_data(ID)
             tfrecord_writer.write(features.SerializeToString())
         tfrecord_writer.close()
         print("[INFO] Finished saving test tfrecord files in {}".format(out_directory))
@@ -92,7 +92,7 @@ class TFRecordWriter(object):
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
             'image/encoded': self._bytes_feature(img.tostring()),
-            'image/format': self._bytes_feature(image_format),
+            'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
             'image/object/bbox/ymin': self._float_list_feature(ymins),
