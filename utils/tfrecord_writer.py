@@ -128,9 +128,6 @@ class TFRecordWriter(object):
         for idx, cname in enumerate(self.classes):
             if class_text == cname:
                 return idx
-            else:
-                print("Need to fix label names before running it.")
-                raise ValueError
 
     def _int64_feature(self, value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
