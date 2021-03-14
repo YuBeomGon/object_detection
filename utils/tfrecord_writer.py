@@ -46,7 +46,7 @@ class TFRecordWriter(object):
 
         # Trainset
         print("[INFO] Start writing train tfrecords")
-        out_path = os.path.join(out_directory, "/train/trainset_papsmear.tfrecords")
+        out_path = out_directory + "trainset_papsmear.tfrecords"
         tfrecord_writer = tf.io.TFRecordWriter(out_path)
         # Collect train data
         for idx, ID in enumerate(train_IDs):
@@ -57,7 +57,7 @@ class TFRecordWriter(object):
 
         # Testset
         print("[INFO] Start writing test tfrecords")
-        out_path = os.path.join(out_directory, "/test/testset_papsmear.tfrecords")
+        out_path = out_directory + "testset_papsmear.tfrecords"
         tfrecord_writer = tf.io.TFRecordWriter(out_path)
         # Collect test data
         for idx, ID in enumerate(test_IDs):
