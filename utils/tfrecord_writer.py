@@ -80,7 +80,7 @@ class TFRecordWriter(object):
         # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         labels = self.labels_info.get(data_ID)
         ## Crop and transform
-        # img, labels = self._crop_and_transform_data(img, labels)
+        img, labels = self._crop_and_transform_data(img, labels)
 
         height, width = img.shape[:2]
         img_format = 'jpg'
@@ -127,10 +127,10 @@ class TFRecordWriter(object):
             new_bbox_point = transformations.transform_bbox_points(img, bbox_point)
             new_label = [
                 cname, 
-                new_bbox_point[0] / width,
-                new_bbox_point[1] / height, 
-                new_bbox_point[2] / width,
-                new_bbox_point[3] / height
+                new_bbox_point[0] / float(width),
+                new_bbox_point[1] / float(height), 
+                new_bbox_point[2] / float(width),
+                new_bbox_point[3] / float(height)
             ]
             new_labels.append(new_label)
         
