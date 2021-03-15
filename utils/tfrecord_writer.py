@@ -74,8 +74,8 @@ class TFRecordWriter(object):
         with tf.io.gfile.GFile(img_path, 'rb') as fid:
             encoded_png = fid.read()
         encoded_png_io = io.BytesIO(encoded_png)
-        image = pil.open(encoded_png_io)
-        image = np.asarray(image)
+        img = pil.open(encoded_png_io)
+        img = np.asarray(img)
         # img = cv2.imread(img_path)
         # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         labels = self.labels_info.get(data_ID)
