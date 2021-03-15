@@ -83,16 +83,21 @@ class TFRecordWriter(object):
         xmaxs = [label[3] for label in labels]
         ymaxs = [label[4] for label in labels]
 
-        classes_text = [self.class_mapper.get(label[0]).encode('utf-8') for label in labels]
+        classes_text = [self.class_mapper.get(label[0][0]) for label in labels]
         classes = [self._class_text_to_int(text) for text in classes_text]
+
+        # Encoding string
+        classes_text = [text.encode('utf-8') for text in classes_text]
+        data_ID = data_ID.encode('utf-8')
+        img_format = img_format.encode('utf-8')
 
         features = {
             'image/height': self._int64_feature(height),
             'image/width': self._int64_feature(width),
-            'image/filename': self._bytes_feature(data_ID.encode('utf-8')),
-            'image/source_id': self._bytes_feature(data_ID.encode('utf-8')),
+            'image/filename': self._bytes_feature(data_ID),
+            'image/source_id': self._bytes_feature(data_ID),
             'image/encoded': self._bytes_feature(img.tostring()),
-            'image/format': self._bytes_feature(img_format.encode('utf-8')),
+            'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
             'image/object/bbox/ymin': self._float_list_feature(ymins),
