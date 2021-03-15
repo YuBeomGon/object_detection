@@ -1,6 +1,6 @@
 #/usr/bin/bash
 
-PIPELINE_CONFIG_PATH=configs/ssdlite_mobilenet_v2_papsmear.config
+PIPELINE_CONFIG_PATH=configs/ssd_mobilenet_v2_fpnlite_papsmear.config
 
 PYTHONPATH=`pwd`/models/research:`pwd`/models/research/slim \
     python3 ./models/research/object_detection/model_main.py \
