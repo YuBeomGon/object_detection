@@ -3,7 +3,12 @@ import numpy as np
 
 def generate_partition(out_path, labels_info_path, train_ratio=0.7, oversampling=False):
     labels_info = np.load(labels_info_path, allow_pickle=True, encoding='latin1').item()
-    valid_image_IDs = list(labels_info.keys())
+    
+    # Delete ID when labels not exist.
+    valid_image_IDs = []
+    for k, v in labels_info.items():
+        if len(v) != 0:
+            valid_image_IDs.append(k)
     
     # Generate Partition (Train / Test)
     num_of_data = len(valid_image_IDs)
