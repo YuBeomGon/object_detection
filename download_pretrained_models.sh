@@ -1,7 +1,8 @@
-#/usr/bin/bash
+#!/bin/bash
 
-BASE_URL="http://download.tensorflow.org/models/object_detection/"
-MODEL="ssdlite_mobilenet_v2_coco_2018_05_09"
+BASE_URL="http://download.tensorflow.org/models/object_detection/tf2/20200711/"
+MODEL = "ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8.tar.gz"
+
 
 wget --no-check-certificate \
          ${BASE_URL}${MODEL}.tar.gz \
