@@ -130,9 +130,12 @@ class TFRecordWriter(object):
         return img, new_labels
         
     def _class_text_to_int(self, class_text):
-        for idx, cname in enumerate(self.classes):
-            if class_text == cname:
-                return idx
+        if class_text == self.classes[0]:
+            return 1
+        elif class_text == self.classes[1]:
+            return 2
+        elif class_text == self.classes[2]:
+            return 3
 
     def _int64_feature(self, value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
