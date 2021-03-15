@@ -1,3 +1,5 @@
+import io
+import PIL.Image as pil
 import os
 import cv2
 import tensorflow as tf
@@ -69,11 +71,16 @@ class TFRecordWriter(object):
     def _get_data(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
-        img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        with tf.gfile.GFile(img_path, 'rb') as fid:
+            encoded_png = fid.read()
+        encoded_png_io = io.BytesIO(encoded_png)
+        image = pil.open(encoded_png_io)
+        image = np.asarray(image)
+        # img = cv2.imread(img_path)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         labels = self.labels_info.get(data_ID)
         ## Crop and transform
-        img, labels = self._crop_and_transform_data(img, labels)
+        # img, labels = self._crop_and_transform_data(img, labels)
 
         height, width = img.shape[:2]
         img_format = 'jpg'
@@ -96,7 +103,7 @@ class TFRecordWriter(object):
             'image/width': self._int64_feature(width),
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
-            'image/encoded': self._bytes_feature(img.tostring()),
+            'image/encoded': self._bytes_feature(encoded_png),
             'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
