@@ -83,7 +83,7 @@ class TFRecordWriter(object):
         xmaxs = [label[3] for label in labels]
         ymaxs = [label[4] for label in labels]
 
-        classes_text = [self.class_mapper.get(label[0][0]) for label in labels]
+        classes_text = [self.class_mapper.get(label[0]) for label in labels]
         classes = [self._class_text_to_int(text) for text in classes_text]
 
         # Encoding string
