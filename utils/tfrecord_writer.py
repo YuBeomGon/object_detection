@@ -4,6 +4,8 @@ import os
 import cv2
 import tensorflow as tf
 import numpy as np
+import six
+import contextlib2
 
 from utils import transformations
 
@@ -48,36 +50,53 @@ class TFRecordWriter(object):
 
         # Trainset
         print("[INFO] Start writing train tfrecords")
-        out_path = out_directory + "trainset_papsmear.tfrecords"
-        tfrecord_writer = tf.io.TFRecordWriter(out_path)
-        # Collect train data
-        for idx, ID in enumerate(train_IDs):
-            features = self._get_data(ID)
-            tfrecord_writer.write(features.SerializeToString())
-        tfrecord_writer.close()
+        
+        sub_dir = "train/"
+        if not os.path.exists(out_directory + sub_dir):
+            os.mkdir(out_directory + sub_dir)
+
+        ## Collect train data
+        NUM_SHARDS = 100
+        output_filebase = out_directory + sub_dir + "trainset_papsmear.record"
+
+        with contextlib2.ExitStack() as tf_record_close_stack:
+            output_tfrecords = self._open_sharded_output_tfrecords(
+                tf_record_close_stack, output_filebase, NUM_SHARDS)
+            
+            for idx, ID in enumerate(train_IDs):
+                tf_example = self._create_tf_example(ID)
+                output_shard_index = idx % NUM_SHARDS
+                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
+        
         print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))
 
         # Testset
         print("[INFO] Start writing test tfrecords")
-        out_path = out_directory + "testset_papsmear.tfrecords"
-        tfrecord_writer = tf.io.TFRecordWriter(out_path)
-        # Collect test data
-        for idx, ID in enumerate(test_IDs):
-            features = self._get_data(ID)
-            tfrecord_writer.write(features.SerializeToString())
-        tfrecord_writer.close()
+        sub_dir = "test/"
+        if not os.path.exists(out_directory + sub_dir):
+            os.mkdir(out_directory + sub_dir)
+
+        ## Collect test data
+        NUM_SHARDS = 100
+        output_filebase = out_directory + sub_dir + "testset_papsmear.record"
+
+        with contextlib2.ExitStack() as tf_record_close_stack:
+            output_tfrecords = self._open_sharded_output_tfrecords(
+                tf_record_close_stack, output_filebase, NUM_SHARDS)
+            
+            for idx, ID in enumerate(test_IDs):
+                tf_example = self._create_tf_example(ID)
+                output_shard_index = idx % NUM_SHARDS
+                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
+
         print("[INFO] Finished saving test tfrecord files in {}".format(out_directory))
 
-    def _get_data(self, data_ID):
+    def _create_tf_example(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
-        with tf.io.gfile.GFile(img_path, 'rb') as fid:
-            encoded_png = fid.read()
-        encoded_png_io = io.BytesIO(encoded_png)
-        img = pil.open(encoded_png_io)
-        img = np.asarray(img)
-        # img = cv2.imread(img_path)
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.imread(img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         labels = self.labels_info.get(data_ID)
         ## Crop and transform
         img, labels = self._crop_and_transform_data(img, labels)
@@ -103,7 +122,7 @@ class TFRecordWriter(object):
             'image/width': self._int64_feature(width),
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
-            'image/encoded': self._bytes_feature(encoded_png),
+            'image/encoded': self._bytes_feature(img.tostring()),
             'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
@@ -127,10 +146,10 @@ class TFRecordWriter(object):
             new_bbox_point = transformations.transform_bbox_points(img, bbox_point)
             new_label = [
                 cname, 
-                new_bbox_point[0] / float(width),
-                new_bbox_point[1] / float(height), 
-                new_bbox_point[2] / float(width),
-                new_bbox_point[3] / float(height)
+                float(new_bbox_point[0]) / float(width),
+                float(new_bbox_point[1]) / float(height), 
+                float(new_bbox_point[2]) / float(width),
+                float(new_bbox_point[3]) / float(height)
             ]
             new_labels.append(new_label)
         
@@ -143,6 +162,30 @@ class TFRecordWriter(object):
             return 2
         elif class_text == self.classes[2]:
             return 3
+
+    def _open_sharded_output_tfrecords(self, exit_stack, base_path, num_shards):
+        """Opens all TFRecord shards for writing and adds them to an exit stack.
+
+        Args:
+            exit_stack: A context2.ExitStack used to automatically closed the TFRecords
+            opened in this function.
+            base_path: The base path for all shards
+            num_shards: The number of shards
+
+        Returns:
+            The list of opened TFRecords. Position k in the list corresponds to shard k.
+        """
+        tf_record_output_filenames = [
+            '{}-{:05d}-of-{:05d}'.format(base_path, idx, num_shards)
+            for idx in six.moves.range(num_shards)
+        ]
+
+        tfrecords = [
+            exit_stack.enter_context(tf.io.TFRecordWriter(file_name))
+            for file_name in tf_record_output_filenames
+        ]
+
+        return tfrecords
 
     def _int64_feature(self, value):
         return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
