@@ -77,7 +77,7 @@ class TFRecordWriter(object):
             os.mkdir(out_directory + sub_dir)
 
         ## Collect test data
-        NUM_SHARDS = 100
+        NUM_SHARDS = 10
         output_filebase = out_directory + sub_dir + "testset_papsmear.record"
 
         with contextlib2.ExitStack() as tf_record_close_stack:
@@ -94,8 +94,12 @@ class TFRecordWriter(object):
     def _create_tf_example(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
-        img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        with tf.gfile.GFile(img_path, 'rb') as fid:
+            encoded_png = fid.read()
+        
+        encoded_png_io = io.BytesIO(encoded_png)
+        img = pil.open(encoded_png_io)
+        img = np.asarray(img)
 
         labels = self.labels_info.get(data_ID)
         ## Crop and transform
@@ -122,7 +126,7 @@ class TFRecordWriter(object):
             'image/width': self._int64_feature(width),
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
-            'image/encoded': self._bytes_feature(img.tostring()),
+            'image/encoded': self._bytes_feature(encoded_png_io),
             'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
