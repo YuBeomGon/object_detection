@@ -26,7 +26,6 @@ def crop_image(img):
     img = img[h_margin:-h_margin, w_margin:-w_margin, :]
     img = np.flip(img, 1)
     img = np.transpose(img, (1, 0, 2))
-    img = np.array(img)
     
     return img
 
@@ -56,7 +55,6 @@ def transform_bbox_points(img, bbox_point):
     xmax -= h_margin
     ymax -= w_margin
     new_bbox_point = [xmin, ymin, xmax, ymax]
-    new_bbox_point = np.array(new_bbox_point)
     
     return new_bbox_point
 

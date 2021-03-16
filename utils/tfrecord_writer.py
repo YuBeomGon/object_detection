@@ -133,10 +133,10 @@ class TFRecordWriter(object):
             new_bbox_point = transformations.transform_bbox_points(img, bbox_point)
             new_label = [
                 cname, 
-                float(new_bbox_point[0]) / float(width),
-                float(new_bbox_point[1]) / float(height), 
-                float(new_bbox_point[2]) / float(width),
-                float(new_bbox_point[3]) / float(height)
+                new_bbox_point[0] / width,
+                new_bbox_point[1] / height, 
+                new_bbox_point[2] / width,
+                new_bbox_point[3] / height
             ]
             new_labels.append(new_label)
         
