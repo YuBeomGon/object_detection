@@ -102,16 +102,16 @@ class TFRecordWriter(object):
     def _create_tf_example(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
-        with tf.io.gfile.GFile(img_path, 'rb') as fid:
-            encoded_png = fid.read()
-        
-        encoded_png_io = io.BytesIO(encoded_png)
-        img = pil.open(encoded_png_io)
-        img = np.asarray(img)
+        img = cv2.imread(img_path)
 
         labels = self.labels_info.get(data_ID)
+        
         ## Crop and transform
         img, labels = self._crop_and_transform_data(img, labels)
+        
+        ### Save temporal image file.
+        _temp_path = "./_temp.jpg"
+        cv2.imwrite(_temp_path, img)
 
         height, width = img.shape[:2]
         img_format = 'jpg'
@@ -128,6 +128,11 @@ class TFRecordWriter(object):
         classes_text = [text.encode('utf-8') for text in classes_text]
         data_ID = data_ID.encode('utf-8')
         img_format = img_format.encode('utf-8')
+
+        # Encoding image
+        with tf.io.gfile.GFile(_temp_path, 'rb') as fid:
+            encoded_png = fid.read()
+        encoded_png_io = io.BytesIO(encoded_png)
 
         features = {
             'image/height': self._int64_feature(height),
