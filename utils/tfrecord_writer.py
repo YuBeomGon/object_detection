@@ -132,14 +132,13 @@ class TFRecordWriter(object):
         # Encoding image
         with tf.io.gfile.GFile(_temp_path, 'rb') as fid:
             encoded_png = fid.read()
-        encoded_png_io = io.BytesIO(encoded_png)
 
         features = {
             'image/height': self._int64_feature(height),
             'image/width': self._int64_feature(width),
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
-            'image/encoded': self._bytes_feature(encoded_png_io),
+            'image/encoded': self._bytes_feature(encoded_png),
             'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
