@@ -67,6 +67,10 @@ class TFRecordWriter(object):
                 tf_example = self._create_tf_example(ID)
                 output_shard_index = idx % NUM_SHARDS
                 output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
+
+                # Verbose
+                if idx % 1000 == 0:
+                    print(idx, ID)
         
         print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))
 
@@ -88,6 +92,10 @@ class TFRecordWriter(object):
                 tf_example = self._create_tf_example(ID)
                 output_shard_index = idx % NUM_SHARDS
                 output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
+
+                # Verbose
+                if idx % 1000 == 0:
+                    print(idx, ID)
 
         print("[INFO] Finished saving test tfrecord files in {}".format(out_directory))
 
