@@ -70,7 +70,7 @@ class TFRecordWriter(object):
         tfrecord_writer.close()
         print("[INFO] Finished saving test tfrecord files in {}".format(out_directory))
 
-    def _create_tf_example(self, data_ID):
+    def _get_data(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
         img = cv2.imread(img_path)
