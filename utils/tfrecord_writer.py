@@ -102,7 +102,7 @@ class TFRecordWriter(object):
     def _create_tf_example(self, data_ID):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
-        with tf.gfile.GFile(img_path, 'rb') as fid:
+        with tf.io.gfile.GFile(img_path, 'rb') as fid:
             encoded_png = fid.read()
         
         encoded_png_io = io.BytesIO(encoded_png)
