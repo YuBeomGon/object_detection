@@ -50,53 +50,24 @@ class TFRecordWriter(object):
 
         # Trainset
         print("[INFO] Start writing train tfrecords")
-        
-        sub_dir = "train/"
-        if not os.path.exists(out_directory + sub_dir):
-            os.mkdir(out_directory + sub_dir)
-
-        ## Collect train data
-        NUM_SHARDS = 100
-        output_filebase = out_directory + sub_dir + "trainset_papsmear.record"
-
-        with contextlib2.ExitStack() as tf_record_close_stack:
-            output_tfrecords = self._open_sharded_output_tfrecords(
-                tf_record_close_stack, output_filebase, NUM_SHARDS)
-            
-            for idx, ID in enumerate(train_IDs):
-                tf_example = self._create_tf_example(ID)
-                output_shard_index = idx % NUM_SHARDS
-                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
-
-                # Verbose
-                if idx % 1000 == 0:
-                    print(idx, ID)
-        
+        out_path = out_directory + "trainset_papsmear.tfrecords"
+        tfrecord_writer = tf.io.TFRecordWriter(out_path)
+        # Collect train data
+        for idx, ID in enumerate(train_IDs):
+            features = self._get_data(ID)
+            tfrecord_writer.write(features.SerializeToString())
+        tfrecord_writer.close()
         print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))
 
         # Testset
         print("[INFO] Start writing test tfrecords")
-        sub_dir = "test/"
-        if not os.path.exists(out_directory + sub_dir):
-            os.mkdir(out_directory + sub_dir)
-
-        ## Collect test data
-        NUM_SHARDS = 10
-        output_filebase = out_directory + sub_dir + "testset_papsmear.record"
-
-        with contextlib2.ExitStack() as tf_record_close_stack:
-            output_tfrecords = self._open_sharded_output_tfrecords(
-                tf_record_close_stack, output_filebase, NUM_SHARDS)
-            
-            for idx, ID in enumerate(test_IDs):
-                tf_example = self._create_tf_example(ID)
-                output_shard_index = idx % NUM_SHARDS
-                output_tfrecords[output_shard_index].write(tf_example.SerializeToString())
-
-                # Verbose
-                if idx % 1000 == 0:
-                    print(idx, ID)
-
+        out_path = out_directory + "testset_papsmear.tfrecords"
+        tfrecord_writer = tf.io.TFRecordWriter(out_path)
+        # Collect test data
+        for idx, ID in enumerate(test_IDs):
+            features = self._get_data(ID)
+            tfrecord_writer.write(features.SerializeToString())
+        tfrecord_writer.close()
         print("[INFO] Finished saving test tfrecord files in {}".format(out_directory))
 
     def _create_tf_example(self, data_ID):
