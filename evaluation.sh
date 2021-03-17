@@ -10,7 +10,7 @@ EVAL_DIR=${MODEL_DIR}_eval
 # rm -rf ${EVAL_DIR}
 
 PYTHONPATH=`pwd`/models/research:`pwd`/models/research/slim \
-    python3 ./models/research/object_detection/model_main_tf2.py \
+    TF_CPP_MIN_LOG_LEVEL=2 CUDA_VISIBLE_DEVICES=0,1 python3 ./models/research/object_detection/model_main_tf2.py \
             --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
             --checkpoint_dir=${MODEL_DIR} \
             --model_dir=${EVAL_DIR} \
