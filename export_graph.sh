@@ -10,7 +10,8 @@ rm -rf ${OUTPUT_DIR}
 
 PYTHONPATH=`pwd`/models/research:`pwd`/models/research/slim \
 TF_CPP_MIN_LOG_LEVEL=2 CUDA_VISIBLE_DEVICES=0,1 \
-    python3 ./models/research/object_detection/exporter_main_v2.py \
+    python3 ./models/research/object_detection/export_tflite_graph_tf2.py \
             --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
             --trained_checkpoint_dir=${CHECKPOINT_DIR} \
-            --output_directory=${OUTPUT_DIR}
+            --output_directory=${OUTPUT_DIR} \
+            --add_postprocessing_op=true
