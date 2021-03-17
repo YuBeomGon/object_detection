@@ -14,4 +14,4 @@ TF_CPP_MIN_LOG_LEVEL=2 CUDA_VISIBLE_DEVICES=0,1 \
             --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
             --trained_checkpoint_dir=${CHECKPOINT_DIR} \
             --output_directory=${OUTPUT_DIR} \
-            --add_postprocessing_op=true
+            --max_detections=150
