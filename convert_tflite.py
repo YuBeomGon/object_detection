@@ -1,10 +1,5 @@
-from absl import flags
+import argparse
 import tensorflow as tf
-
-flags.DEFINE_string('saved_model_dir', None, 'exported graph directory path')
-flags.DEFINE_string('out_tflite_path', None, 'converted tflite output file path')
-
-FLAGS = flags.FLAGS
 
 
 def convert_tflite(saved_model_dir_path, out_path):
@@ -26,4 +21,10 @@ def convert_tflite(saved_model_dir_path, out_path):
 
 
 if __name__ == '__main__':
-    convert_tflite(FLAGS.saved_model_dir, FLAGS.out_tflite_path)
+    parser = argparse.ArgumentParser(description="Converting saved model to TFLite model")
+    parser.add_argument("--saved_model_dir", type=str, help='exported graph directory path')
+    parser.add_argument("--out_tflite_path", type=str, help='converted tflite output file path')
+
+    args = parser.parse_args()
+
+    convert_tflite(args.saved_model_dir, args.out_tflite_path)
