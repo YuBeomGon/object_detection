@@ -91,7 +91,8 @@ class TFRecordWriter(object):
         img, labels = self._crop_and_transform_data(img, labels)
 
         ## Preprocess input image
-        input_img = self._preprocess_input(img, mean=128.0, std=128.0)
+        # input_img = self._preprocess_input(img, mean=128.0, std=128.0)
+        input_img = cv2.resize(img, (self.input_shape[0], self.input_shape[1]))
 
         height, width = input_img.shape[:2]
         img_format = 'jpg'
@@ -108,7 +109,10 @@ class TFRecordWriter(object):
         classes_text = [text.encode('utf-8') for text in classes_text]
         data_ID = data_ID.encode('utf-8')
         img_format = img_format.encode('utf-8')
-        encoded_img = input_img.tostring()
+        # encoded_img = input_img.tostring()
+        cv2.imwrite("./_temp.jpg", input_img)
+        with tf.io.gfile.GFile("./_temp.jpg", 'rb') as fid:
+            encoded_img = fid.read()
 
         features = {
             'image/height': self._int64_feature(height),

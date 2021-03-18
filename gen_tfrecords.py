@@ -6,7 +6,7 @@ def set_config():
     config = {
         'partition_path': './data/partition.npy',
         'labels_info_path': './data/labels_info.npy',
-        'input_shape': (512, 512, 3),
+        'input_shape': (320, 320, 3),
         'data_dir_path': '/home/Dataset/Papsmear/original/',
         'out_dir_path': './data/tfrecords/'
     }
