@@ -1,5 +1,4 @@
 import io
-import PIL.Image as pil
 import os
 import cv2
 import tensorflow as tf
@@ -12,7 +11,7 @@ from utils import transformations
 
 class TFRecordWriter(object):
     def __init__(self, partition, labels_info, 
-                    data_dir_path="./data/", input_shape=(512, 512, 3)):
+                    data_dir_path="./data/", input_shape=(320, 320, 3)):
         """ TFRecord Writer Init.
         Args:
             partition: partition dict
@@ -84,17 +83,17 @@ class TFRecordWriter(object):
         # Load X and Y
         img_path = self.data_dir_path + data_ID
         img = cv2.imread(img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         labels = self.labels_info.get(data_ID)
         
-        ## Crop and transform
+        ## Preprocess image and bboxes
         img, labels = self._crop_and_transform_data(img, labels)
-        
-        ### Save temporal image file.
-        _temp_path = "./_temp.jpg"
-        cv2.imwrite(_temp_path, img)
 
-        height, width = img.shape[:2]
+        ## Preprocess input image
+        input_img = self._preprocess_input(img, mean=128.0, std=128.0)
+
+        height, width = input_img.shape[:2]
         img_format = 'jpg'
         
         xmins = [label[1] for label in labels]
@@ -105,21 +104,18 @@ class TFRecordWriter(object):
         classes_text = [self.class_mapper.get(label[0]) for label in labels]
         classes = [self._class_text_to_int(text) for text in classes_text]
 
-        # Encoding string
+        # Encoding
         classes_text = [text.encode('utf-8') for text in classes_text]
         data_ID = data_ID.encode('utf-8')
         img_format = img_format.encode('utf-8')
-
-        # Encoding image
-        with tf.io.gfile.GFile(_temp_path, 'rb') as fid:
-            encoded_png = fid.read()
+        encoded_img = input_img.tostring()
 
         features = {
             'image/height': self._int64_feature(height),
             'image/width': self._int64_feature(width),
             'image/filename': self._bytes_feature(data_ID),
             'image/source_id': self._bytes_feature(data_ID),
-            'image/encoded': self._bytes_feature(encoded_png),
+            'image/encoded': self._bytes_feature(encoded_img),
             'image/format': self._bytes_feature(img_format),
             'image/object/bbox/xmin': self._float_list_feature(xmins),
             'image/object/bbox/xmax': self._float_list_feature(xmaxs),
@@ -130,6 +126,14 @@ class TFRecordWriter(object):
         }
 
         return tf.train.Example(features=tf.train.Features(feature=features))
+
+    def _preprocess_input(self, crop_img, mean=128.0, std=128.0):
+        """ Resize and normalize input
+        """
+        input_img = cv2.resize(crop_img, (self.input_shape[0], self.input_shape[1]))
+        input_img = (input_img - mean) / std
+        
+        return input_img
 
     def _crop_and_transform_data(self, img, labels):
         # crop image
