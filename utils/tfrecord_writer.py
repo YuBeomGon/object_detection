@@ -140,15 +140,14 @@ class TFRecordWriter(object):
         return input_img
 
     def _crop_and_transform_data(self, img, labels):
-        # crop image
-        height, width = img.shape[:2]
-        # and transform bboxes
+        crop_img = transformations.crop_image(img)
+        height, width = crop_img.shape[:2]
+
         new_labels = []
         for idx, label in enumerate(labels):
             cname, xmin, ymin, xmax, ymax = label
             bbox_point = [xmin, ymin, xmax, ymax]
-            new_bbox_point = transformations.transform_bbox_points(img, bbox_point)
-            img = transformations.crop_image(img)
+            new_bbox_point = transformations.transform_bbox_points(crop_img, bbox_point)
             new_label = [
                 cname, 
                 new_bbox_point[0] / width,
