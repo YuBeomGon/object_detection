@@ -26,12 +26,12 @@ class TFRecordWriter(object):
         self.data_dir_path = data_dir_path
         # Input size
         self.input_shape = input_shape
-        # Classes
+        # Classes --> TBD
         self.class_mapper = {
             'Normal': 'Normal',
             'Benign': 'Normal',
             'ASCUS': 'Low-Risk',
-            'LSIL': 'High-Risk',
+            'LSIL': 'Low-Risk',
             'HSIL': 'High-Risk',
             'Carcinoma': 'High-Risk',
         }
@@ -141,7 +141,6 @@ class TFRecordWriter(object):
 
     def _crop_and_transform_data(self, img, labels):
         # crop image
-        img = transformations.crop_image(img)
         height, width = img.shape[:2]
         # and transform bboxes
         new_labels = []
@@ -149,6 +148,7 @@ class TFRecordWriter(object):
             cname, xmin, ymin, xmax, ymax = label
             bbox_point = [xmin, ymin, xmax, ymax]
             new_bbox_point = transformations.transform_bbox_points(img, bbox_point)
+            img = transformations.crop_image(img)
             new_label = [
                 cname, 
                 new_bbox_point[0] / width,
