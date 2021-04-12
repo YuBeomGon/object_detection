@@ -10,4 +10,5 @@ PYTHONPATH=`pwd`/models/research:`pwd`/models/research/slim \
             --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
 	        --model_dir=${OUT_MODEL_DIR}
             --sample_1_of_n_eval_samples=1 \
+            --num_workers=4
             --alsologtostderr

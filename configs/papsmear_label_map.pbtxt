@@ -1,14 +1,4 @@
 item {
   id: 1
-  name: 'Normal'
-}
-
-item {
-  id: 2
-  name: 'Low-Risk'
-}
-
-item {
-  id: 3
-  name: 'High-Risk'
+  name: 'Abnormal'
 }
