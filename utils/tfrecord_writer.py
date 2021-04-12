@@ -8,7 +8,6 @@ import contextlib2
 
 from utils import transformations
 
-
 class TFRecordWriter(object):
     def __init__(self, partition, labels_info, 
                     data_dir_path="./data/", input_shape=(320, 320, 3)):
@@ -26,25 +25,28 @@ class TFRecordWriter(object):
         self.data_dir_path = data_dir_path
         # Input size
         self.input_shape = input_shape
-        # Classes --> TBD
+        # Classes
         self.class_mapper = {
             'Normal': 'Normal',
             'Benign': 'Normal',
-            'ASCUS': 'Low-Risk',
-            'LSIL': 'Low-Risk',
-            'HSIL': 'High-Risk',
-            'Carcinoma': 'High-Risk',
+            'ASCUS': 'Abnormal',
+            'LSIL': 'Abnormal',
+            'HSIL': 'Abnormal',
+            'Carcinoma': 'Abnormal',
         }
-        self.classes = ['Normal', 'Low-Risk', 'High-Risk']
+#         self.classes = ['Normal', 'Abnormal']
+        self.classes = ['Abnormal']
 
     def write_tfrecords(self, out_directory):
         if not os.path.exists(out_directory):
             os.mkdir(out_directory)
 
         train_IDs = self.partition['train']
+        val_IDs = self.partition['val']
         test_IDs = self.partition['test']
 
         print("Num of Trainset: {}".format(len(train_IDs)))
+        print("Num of Valset: {}".format(len(val_IDs)))
         print("Num of Testset: {}".format(len(test_IDs)))
 
         # Trainset
@@ -62,6 +64,22 @@ class TFRecordWriter(object):
 
         tfrecord_writer.close()
         print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))
+        
+        # valset
+        print("[INFO] Start writing val tfrecords")
+        out_path = out_directory + "valset_papsmear.tfrecords"
+        tfrecord_writer = tf.io.TFRecordWriter(out_path)
+        # Collect train data
+        for idx, ID in enumerate(val_IDs):
+            features = self._get_data(ID)
+            tfrecord_writer.write(features.SerializeToString())
+
+            # For Verbose
+            if idx % 1000 == 0:
+                print(idx, ID)
+
+        tfrecord_writer.close()
+        print("[INFO] Finished saving train tfrecord files in {}".format(out_directory))        
 
         # Testset
         print("[INFO] Start writing test tfrecords")
@@ -92,10 +110,12 @@ class TFRecordWriter(object):
 
         ## Preprocess input image
         # input_img = self._preprocess_input(img, mean=128.0, std=128.0)
-        input_img = cv2.resize(img, (self.input_shape[0], self.input_shape[1]))
+#         input_img = cv2.resize(img, (self.input_shape[0], self.input_shape[1]))
+        input_img = cv2.resize(img, (640, 640))
 
         height, width = input_img.shape[:2]
-        img_format = 'jpg'
+        img_format = data_ID.split('.')[-1]
+#         img_format = 'jpg'
         
         xmins = [label[1] for label in labels]
         ymins = [label[2] for label in labels]
@@ -140,32 +160,50 @@ class TFRecordWriter(object):
         return input_img
 
     def _crop_and_transform_data(self, img, labels):
-        crop_img = transformations.crop_image(img)
-        height, width = crop_img.shape[:2]
-
-        new_labels = []
+        # switch image
+        img = transformations.switch_image(img)
+        
+        # and transform bboxes
+        labels_list =[]
+        bbox_points = []
         for idx, label in enumerate(labels):
             cname, xmin, ymin, xmax, ymax = label
             bbox_point = [xmin, ymin, xmax, ymax]
-            new_bbox_point = transformations.transform_bbox_points(crop_img, bbox_point)
+            if xmax > xmin and ymax > ymin :
+                labels_list.append(cname)
+                bbox_points.append(bbox_point)
+
+        transformed = transformations.transforms(image=img, bboxes=bbox_points, labels=labels_list)
+        transformed_image = transformed['image']
+        transformed_bboxes = transformed['bboxes']
+        transformed_class_labels = transformed['labels']    
+        height, width = transformed_image.shape[:2]
+        
+        new_labels = []
+        for label, bbox in zip(transformed_class_labels, transformed_bboxes) :
             new_label = [
-                cname, 
-                new_bbox_point[0] / width,
-                new_bbox_point[1] / height, 
-                new_bbox_point[2] / width,
-                new_bbox_point[3] / height
+                label, 
+                bbox[0] / width,
+                bbox[1] / height, 
+                bbox[2] / width,
+                bbox[3] / height
             ]
             new_labels.append(new_label)
+            self.bbox_check(new_label)
         
-        return img, new_labels
+        return transformed_image, new_labels
+    
+    def bbox_check(self, labels) :
+        for point in labels[1:] :
+            if point < 0 or point > 1.0 :
+                raise BoundingBOXError
+        
         
     def _class_text_to_int(self, class_text):
         if class_text == self.classes[0]:
             return 1
         elif class_text == self.classes[1]:
             return 2
-        elif class_text == self.classes[2]:
-            return 3
 
     def _open_sharded_output_tfrecords(self, exit_stack, base_path, num_shards):
         """Opens all TFRecord shards for writing and adds them to an exit stack.

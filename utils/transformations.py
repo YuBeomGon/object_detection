@@ -1,62 +1,63 @@
 import cv2
 import numpy as np
+import albumentations as A
 
+transforms = A.Compose([
+    A.CenterCrop(1350,1350, True,1),
+], p=1.0, bbox_params=A.BboxParams(format='pascal_voc', min_area=0, min_visibility=0.5, label_fields=['labels'])) 
 
-def crop_image(img):
+def switch_image(img) :
     h, w = img.shape[:2]
-    # Case 1
-    if (h, w) == (4032, 1960):
-        h_margin = 1341
-        w_margin = 305
-    
-    elif (h, w) == (4000, 1800):
-        h_margin = 1325
-        w_margin = 225
-
-    elif (h, w) == (1800, 4000):
-        h_margin = 225
-        w_margin = 1325
-    
-    else:
-        h_margin = 0
-        w_margin = 0
-
-    wid = w - w_margin*2
-    hgt = h - h_margin*2
-    img = img[h_margin:-h_margin, w_margin:-w_margin, :]
-    img = np.flip(img, 1)
-    img = np.transpose(img, (1, 0, 2))
-    
+    if (h, w) == (4032, 1960) or (h, w) == (4000, 1800) :
+        img = np.flip(img, 1)
+        img = np.transpose(img, (1, 0, 2))      
     return img
 
+# def crop_image(img):
+#     h, w = img.shape[:2]
+#     # Case 1
+#     if (h, w) == (1960, 4032):
+#         h_margin = 305
+#         w_margin = 1341
 
-def transform_bbox_points(img, bbox_point):
-    h, w = img.shape[:2]
-    # Case 1
-    if (h, w) == (4032, 1960):
-        h_margin = 1341
-        w_margin = 305
+#     elif (h, w) == (1800, 4000):
+#         h_margin = 225
+#         w_margin = 1325
     
-    elif (h, w) == (4000, 1800):
-        h_margin = 1325
-        w_margin = 225
+#     else: #(1560, 1632)
+#         h_margin = 0
+#         w_margin = 0
 
-    elif (h, w) == (1800, 4000):
-        h_margin = 225
-        w_margin = 1325
+#     wid = w - w_margin*2
+#     hgt = h - h_margin*2
+#     img = img[h_margin:-h_margin, w_margin:-w_margin, :]
     
-    else:
-        h_margin = 0
-        w_margin = 0
+#     return img
+
+
+# def transform_bbox_points(img, bbox_point):
+#     h, w = img.shape[:2]
+#     # Case 1
+#     if (h, w) == (1960, 4032):
+#         h_margin = 305
+#         w_margin = 1341
+
+#     elif (h, w) == (1800, 4000):
+#         h_margin = 225
+#         w_margin = 1325
     
-    xmin, ymin, xmax, ymax = bbox_point
-    xmin -= h_margin
-    ymin -= w_margin
-    xmax -= h_margin
-    ymax -= w_margin
-    new_bbox_point = [xmin, ymin, xmax, ymax]
+#     else: #(1560, 1632)
+#         h_margin = 0
+#         w_margin = 0
     
-    return new_bbox_point
+#     xmin, ymin, xmax, ymax = bbox_point
+#     xmin -= w_margin
+#     ymin -= h_margin
+#     xmax -= w_margin
+#     ymax -= h_margin
+#     new_bbox_point = [xmin, ymin, xmax, ymax]
+    
+#     return new_bbox_point
 
 
 def shift(img, val_x, val_y, points_2d=None, is_normalized=True):
