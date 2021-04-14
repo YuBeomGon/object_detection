@@ -130,3 +130,10 @@ dmypy.json
 
 .vscode/
 *.DS_Store
+training/*
+data/tfrecords/*
+models/*
+backup/*
+ssd_*
+data/partitions.npy
+data/labels_info.npy

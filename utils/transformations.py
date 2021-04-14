@@ -4,7 +4,7 @@ import albumentations as A
 
 transforms = A.Compose([
     A.CenterCrop(1350,1350, True,1),
-], p=1.0, bbox_params=A.BboxParams(format='pascal_voc', min_area=0, min_visibility=0.5, label_fields=['labels'])) 
+], p=1.0, bbox_params=A.BboxParams(format='pascal_voc', min_area=0, min_visibility=0.99, label_fields=['labels'])) 
 
 def switch_image(img) :
     h, w = img.shape[:2]

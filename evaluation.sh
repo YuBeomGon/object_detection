@@ -2,6 +2,7 @@
 
 PIPELINE_CONFIG_PATH=configs/ssd_mobilenet_v2_fpnlite_papsmear.config
 MODEL_DIR=training/
+#MODEL_DIR=backup/
 
 mkdir -p ${MODEL_DIR}_eval
 EVAL_DIR=${MODEL_DIR}_eval

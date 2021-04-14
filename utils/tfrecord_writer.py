@@ -109,9 +109,9 @@ class TFRecordWriter(object):
         img, labels = self._crop_and_transform_data(img, labels)
 
         ## Preprocess input image
-        # input_img = self._preprocess_input(img, mean=128.0, std=128.0)
-#         input_img = cv2.resize(img, (self.input_shape[0], self.input_shape[1]))
-        input_img = cv2.resize(img, (640, 640))
+#         input_img = self._preprocess_input(img, mean=128.0, std=128.0)
+        input_img = cv2.resize(img, (self.input_shape[0], self.input_shape[1]))
+#         input_img = input_img / 255.0
 
         height, width = input_img.shape[:2]
         img_format = data_ID.split('.')[-1]
